@@ -1,0 +1,10 @@
+primaryAppliance:
+  hosts:
+    portal.example.com:
+  vars:
+    ___miq_auth_User: somebody
+    ___miq_auth_Pass: !vault | vault data here
+primaryDb:
+  hosts:
+    db01.example.com:
+
