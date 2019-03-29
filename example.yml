@@ -1,0 +1,39 @@
+---
+- name: fetch configuration_script_ids
+  hosts: primaryDb
+  gather_facts: no
+  tasks:
+   - import_role:
+       name: miq-get-configuration_script_ids
+     vars:
+       reference: "miqdata"
+
+- name: log in and gather data
+  hosts: primaryAppliance
+  gather_facts: no
+  tasks:
+    - import_role:
+        name: miq-auth
+      vars:
+        reference: "miqdata"
+    - import_role:
+        name: miq-get-service_templates
+      vars:
+        reference: "miqdata"
+    - import_role:
+        name: miq-get-configuration_script_sources
+      vars:
+        reference: "miqdata"
+    - import_role:
+        name: miq-get-providers
+      vars:
+        reference: "miqdata"
+    - import_role:
+        name: miq-get-service_dialogs
+      vars:
+        reference: "miqdata"
+    - import_role:
+        name: miq-get-service_catalogs
+      vars:
+        reference: "miqdata"
+    - debug: var=miqdata
