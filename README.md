@@ -1,6 +1,6 @@
 # miqTools - ansible roles for interacting with ManageIQ
 
-This is a collection of roles that allow easy interaction with ManageIQ via persistent sessions and access to several collections.
+This is a collection of roles that allow easy interaction with ManageIQ via persistent sessions and access to several collections for the purposes of creating/manipulating content in a programmatic fashion.
 
 ## Invocation
 
