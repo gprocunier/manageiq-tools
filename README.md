@@ -4,13 +4,7 @@ This is a collection of roles that allow easy interaction with ManageIQ via pers
 
 ## Invocation
 
-```mermaid
-graph TD
-MasterPlay>MasterPlay] -->|credentials|miq-auth(import_role: miq-auth)
-miq-auth -->|loginCookie| miq-get-service_catalogs(import_role: miq-get-service_catalogs)
-miq-get-service_catalogs --> ansibleHashMap
-
-```
+![alt text](https://i.imgur.com/XPJQ2IE.png)
 
 miqTools has some reserved variables associated with the primaryAppliance inventory:
 
