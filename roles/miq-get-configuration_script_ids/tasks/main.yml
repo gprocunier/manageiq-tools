@@ -1,0 +1,27 @@
+# Miq at the time of writing this had not yet exposed configuration_script_id's via REST so we need to do some ugly stuff here
+- name: get configuration_script_id
+  shell: 
+    cmd: |
+      . ~/.bash_profile
+      /opt/rh/rh-postgresql95/root/usr/bin/psql -U postgres vmdb_production -AF ',' -t -c "{{ sql }}" || exit 1
+    executable: "/bin/bash"
+  vars:
+    sql: |
+      select array_to_json( array_agg( row_to_json( configuration_scripts ) ) )
+        from ( select id, name, type from configuration_scripts ) configuration_scripts
+           where type = 'ManageIQ::Providers::AnsibleTower::AutomationManager::ConfigurationScript';
+  register: ___miq_register_configOut
+
+- set_fact:
+    ___miq_data_configurationScriptId: "{{ ___miq_data_configurationScriptId | default({}) | combine( { item.name: item.id } ) }}"
+  with_items:
+    - "{{ ___miq_register_configOut.stdout | from_json }}"
+
+- set_fact:
+    tmpHash: "{{ tmpHash | default({}) | combine( { 'configurationScriptIds': ___miq_data_configurationScriptId } ) }}"
+
+- set_fact:
+    "{{ reference }}": '{{ tmpHash }}'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['primaryAppliance'] }}"

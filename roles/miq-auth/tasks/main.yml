@@ -1,0 +1,36 @@
+- name: authenticate and request token
+  uri:
+    url: https://"{{ groups['primaryAppliance'][0] | default('https://localhost') }}"/api/auth
+    method: GET
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_type: json
+    body_format: json
+    user: "{{ ___miq_auth_User | default('admin') }}"
+    password: "{{ ___miq_auth_Pass | default('smartvm') }}"
+  register: ___miq_register_restLogin
+  no_log: true
+
+- set_fact:
+    collectionHash: '{{ hostvars[item] }}'
+  with_items:
+    - "{{ groups['primaryAppliance'] }}"
+  no_log: true
+
+- set_fact:
+    tmpHash: "{{ tmpHash | default({}) | combine( { item.key: item.value } ) }}"
+  with_dict:
+    - "{{ collectionHash[reference] }}"
+    - { 'loginCookie': '{{ data }}' }
+  vars:
+    data: "{{  ___miq_register_restLogin.json.auth_token }}"
+  no_log: true
+
+- set_fact:
+    "{{ reference }}": '{{ tmpHash }}'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['primaryAppliance'] }}"
+  no_log: true
+

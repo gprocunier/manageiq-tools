@@ -1,0 +1,40 @@
+---
+- set_fact:
+    collectionHash: '{{ hostvars[item][reference] }}'
+  with_items:
+    - "{{ groups['primaryAppliance'] }}"
+  no_log: true
+
+- name: Query and store existing service_templates 
+  uri:
+    url: https://"{{ groups['primaryAppliance'][0] | default('https://localhost') }}"/api/service_templates?expand=resources&attributes=id,name
+    method: GET
+    headers:
+      X-Auth-Token: "{{ collectionHash['loginCookie'] }}"
+    validate_certs: no
+    status_code: 200
+  register: ___miq_register_ServiceTemplates
+  no_log: true
+
+- name: create service template map
+  set_fact:
+    ___miq_data_templateMap: '{{ ___miq_data_templateMap | default({}) | combine( { item.name: item.id } ) }}'
+  with_items:
+    - "{{ ___miq_register_ServiceTemplates.json.resources }}"
+  no_log: true
+
+- set_fact:
+    tmpHash: "{{ tmpHash | default({}) | combine( { item.key: item.value } ) }}"
+  with_dict:
+    - "{{ collectionHash }}"
+    - { 'serviceTemplateMap': '{{ data }}' }
+  vars:
+    data: "{{ ___miq_data_templateMap }}"
+  no_log: true
+
+- set_fact:
+    "{{ reference }}": '{{ tmpHash }}'
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups['primaryAppliance'] }}"
+  no_log: true
